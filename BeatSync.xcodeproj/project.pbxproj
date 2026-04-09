@@ -6,8 +6,13 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		3FF04EA32F8867B90035CC55 /* privacy-policy.html in Resources */ = {isa = PBXBuildFile; fileRef = 3FF04EA22F8867B90035CC55 /* privacy-policy.html */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		3FD234772F37B5B000ED4B06 /* BeatSync.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BeatSync.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		3FF04EA22F8867B90035CC55 /* privacy-policy.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = "privacy-policy.html"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -32,6 +37,7 @@
 		3FD2346E2F37B5B000ED4B06 = {
 			isa = PBXGroup;
 			children = (
+				3FF04EA22F8867B90035CC55 /* privacy-policy.html */,
 				3FD234792F37B5B000ED4B06 /* BeatSync */,
 				3FD234782F37B5B000ED4B06 /* Products */,
 			);
@@ -109,6 +115,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3FF04EA32F8867B90035CC55 /* privacy-policy.html in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

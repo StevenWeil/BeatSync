@@ -1,4 +1,5 @@
 import SwiftUI
+import AVFoundation
 
 struct ContentView: View {
     @StateObject private var flashlight = FlashlightService()
@@ -6,6 +7,7 @@ struct ContentView: View {
     
     @State private var showManualSheet = false
     @State private var showSettingsSheet = false
+    @State private var micPermissionDenied = false
     
     var body: some View {
         ZStack {
@@ -46,7 +48,7 @@ struct ContentView: View {
                             if audioEngine.isListening {
                                 stopListening()
                             } else {
-                                startListening()
+                                requestMicAndStart()
                             }
                         }) {
                             ZStack {
@@ -84,10 +86,29 @@ struct ContentView: View {
                         .animation(.easeInOut(duration: 0.3), value: audioEngine.isListening)
                     }
                     
-                    Text(audioEngine.isListening ? "syncing to the beat" : "tap to start")
-                        .font(.system(size: 12, weight: .light))
-                        .foregroundColor(Color(white: 0.35))
-                        .tracking(2)
+                    // Status text — shows interrupted, denied, or default
+                    Group {
+                        if micPermissionDenied {
+                            Button(action: openSettings) {
+                                Text("microphone access required — tap to open settings")
+                                    .font(.system(size: 11, weight: .light))
+                                    .foregroundColor(.orange)
+                                    .tracking(1)
+                                    .multilineTextAlignment(.center)
+                            }
+                        } else if audioEngine.wasInterrupted {
+                            Text("interrupted — tap to restart")
+                                .font(.system(size: 12, weight: .light))
+                                .foregroundColor(Color(white: 0.45))
+                                .tracking(2)
+                        } else {
+                            Text(audioEngine.isListening ? "syncing to the beat" : "tap to start")
+                                .font(.system(size: 12, weight: .light))
+                                .foregroundColor(Color(white: 0.35))
+                                .tracking(2)
+                        }
+                    }
+                    .frame(height: 20)
                 }
                 
                 Spacer()
@@ -249,6 +270,61 @@ struct ContentView: View {
             .presentationDetents([.medium])
         }
     }
+    
+    // MARK: - Microphone Permission
+    
+    private func requestMicAndStart() {
+        if #available(iOS 17.0, *) {
+            switch AVAudioApplication.shared.recordPermission {
+            case .granted:
+                micPermissionDenied = false
+                startListening()
+            case .denied:
+                micPermissionDenied = true
+            case .undetermined:
+                AVAudioApplication.requestRecordPermission { granted in
+                    DispatchQueue.main.async {
+                        if granted {
+                            self.micPermissionDenied = false
+                            self.startListening()
+                        } else {
+                            self.micPermissionDenied = true
+                        }
+                    }
+                }
+            @unknown default:
+                break
+            }
+        } else {
+            switch AVAudioSession.sharedInstance().recordPermission {
+            case .granted:
+                micPermissionDenied = false
+                startListening()
+            case .denied:
+                micPermissionDenied = true
+            case .undetermined:
+                AVAudioSession.sharedInstance().requestRecordPermission { granted in
+                    DispatchQueue.main.async {
+                        if granted {
+                            self.micPermissionDenied = false
+                            self.startListening()
+                        } else {
+                            self.micPermissionDenied = true
+                        }
+                    }
+                }
+            @unknown default:
+                break
+            }
+        }
+    }
+    
+    private func openSettings() {
+        guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
+        UIApplication.shared.open(url)
+    }
+    
+    // MARK: - Listening Controls
     
     private func startListening() {
         if flashlight.isOn { flashlight.turnOff() }
